@@ -40,6 +40,18 @@ public class Transaction {
         }
     }
 
+    public void displayTransactionHistory() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("transactions.txt"))) {
+            String line;
+            System.out.println("Transaction History:");
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading transaction history: " + e.getMessage());
+        }
+    }
+
     private void saveTransaction(String transactionDetails) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("transactions.txt", true))) {
             writer.write(transactionDetails);

@@ -1,9 +1,9 @@
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Transaction {
     private static Transaction instance;
+    private List<Book> borrowedBooks = new ArrayList<>();
 
     private Transaction() {}
 
@@ -14,55 +14,36 @@ public class Transaction {
         return instance;
     }
 
+    public boolean isBookAvailable(Book book) {
+        return !borrowedBooks.contains(book);
+    }
+
     public boolean borrowBook(Book book, Member member) {
-        if (book.isAvailable()) {
-            book.borrowBook();
-            member.borrowBook(book);
-            String transactionDetails = getCurrentDateTime() + " - Borrowing: " + member.getName() + " borrowed " + book.getTitle();
-            System.out.println(transactionDetails);
-            saveTransaction(transactionDetails);
+        if (isBookAvailable(book)) {
+            borrowedBooks.add(book);
+            System.out.println("Book borrowed: " + book.getTitle());
             return true;
         } else {
-            System.out.println("The book is not available.");
+            System.out.println("Book is not available: " + book.getTitle());
             return false;
         }
     }
 
-    public void returnBook(Book book, Member member) {
-        if (member.getBorrowedBooks().contains(book)) {
-            member.returnBook(book);
-            book.returnBook();
-            String transactionDetails = getCurrentDateTime() + " - Returning: " + member.getName() + " returned " + book.getTitle();
-            System.out.println(transactionDetails);
-            saveTransaction(transactionDetails);
+    public boolean returnBook(Book book, Member member) {
+        if (borrowedBooks.contains(book)) {
+            borrowedBooks.remove(book);
+            System.out.println("Book returned: " + book.getTitle());
+            return true;
         } else {
-            System.out.println("This book was not borrowed by the member.");
+            System.out.println("Book was not borrowed: " + book.getTitle());
+            return false;
         }
     }
 
     public void displayTransactionHistory() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("transactions.txt"))) {
-            String line;
-            System.out.println("Transaction History:");
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading transaction history: " + e.getMessage());
+        System.out.println("Transaction History:");
+        for (Book book : borrowedBooks) {
+            System.out.println("- " + book.getTitle());
         }
-    }
-
-    private void saveTransaction(String transactionDetails) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("transactions.txt", true))) {
-            writer.write(transactionDetails);
-            writer.newLine();
-        } catch (IOException e) {
-            System.out.println("Error saving transaction: " + e.getMessage());
-        }
-    }
-
-    private String getCurrentDateTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(new Date());
     }
 }
